@@ -37,7 +37,7 @@ app.post("/posts", async (req, res) => {
   const { titulo, url, descripcion } = req.body;
   try {
     const result = await pool.query(
-      "INSERT INTO posts (titulo, img, descripcion ) VALUES ($1, $2, $3) RETURNING *",
+      "INSERT INTO posts (titulo, img, descripcion ) VALUES ($1, $2, $3)",
       [titulo, url, descripcion]
     );
     res.status(201).json({
@@ -54,7 +54,7 @@ app.put("/posts/like/:id", async (req, res) => {
   const { id } = req.params;
   try {
     const result = await pool.query(
-      "UPDATE posts SET likes = COALESCE(likes, 0) + 1 WHERE id = $1 RETURNING *",
+      "UPDATE posts SET likes = COALESCE(likes, 0) + 1 WHERE id = $1",
       [id]
     );
     if (result.rowCount === 0) {
@@ -73,7 +73,7 @@ app.delete("/posts/:id", async (req, res) => {
   const { id } = req.params;
   try {
     const result = await pool.query(
-      "DELETE FROM posts WHERE id = $1 RETURNING *",
+      "DELETE FROM posts WHERE id = $1",
       [id]
     );
     if (result.rowCount === 0) {
