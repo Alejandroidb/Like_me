@@ -1,4 +1,4 @@
-require("dotenv").config()
+require("dotenv").config();
 
 const express = require("express");
 const app = express();
@@ -12,8 +12,8 @@ const { Pool } = require("pg");
 
 const pool = new Pool({
   host: process.env.DB_HOST,
-  user: process.env.DB_USER, 
-  password: process.env.DB_PASSWORD, 
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   allowExitOnIdle: true,
 });
@@ -41,12 +41,50 @@ app.post("/posts", async (req, res) => {
       [titulo, url, descripcion]
     );
     res.status(201).json({
-        message: "Post agregado con éxito",
-        post: result.rows[0],
-      });
+      message: "Post agregado con éxito",
+      post: result.rows[0],
+    });
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ error: "Error al crear el post" });
+  }
+});
+
+app.put("/posts/like/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query(
+      "UPDATE posts SET likes = COALESCE(likes, 0) + 1 WHERE id = $1 RETURNING *",
+      [id]
+    );
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "Post no encontrado" });
+    }
+    res.json({
+      message: "gracias por el like",
+    });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: "Error en agregar el like" });
+  }
+});
+
+app.delete("/posts/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query(
+      "DELETE FROM posts WHERE id = $1 RETURNING *",
+      [id]
+    );
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "Post no encontrado" });
+    }
+    res.json({
+      message: "Post eliminado correctamente",
+    });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: "Error al eliminar posts" });
   }
 });
 
